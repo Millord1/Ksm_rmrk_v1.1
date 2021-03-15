@@ -7,15 +7,16 @@ import {Transaction} from "../Transaction";
 export class Send extends Interaction
 {
 
-    public asset: Asset;
+    public asset?: Asset;
 
     constructor(rmrk: string, chain: Blockchain, transaction: Transaction) {
         super(rmrk, chain, transaction);
+
         this.asset = this.assetToSend();
     }
 
 
-    private assetToSend()
+    private assetToSend(): Asset|undefined
     {
 
         const rmrkArray: Array<string> = this.splitRmrk();
@@ -25,26 +26,14 @@ export class Send extends Interaction
             this.transaction.destination = isReceiver;
         }
 
-        const isComputed = rmrkArray.pop();
-        let computedId: string = "";
+        const nft = this.assetFromComputedId(rmrkArray);
 
-        if(typeof isComputed == "string"){
-            computedId = isComputed;
+        if(typeof nft === "object"){
+            //@ts-ignore
+            return new Asset(this.rmrk, this.chain, nft);
         }
 
-        const assetData: Array<string> = computedId.split('-');
-
-        const asset: NftInterface = {
-            collection: assetData[1],
-            sn: assetData[4],
-            name: assetData[3],
-            metadata: "",
-            currentOwner: "",
-            instance: assetData[2],
-            computedId: computedId
-        };
-
-        return new Asset(this.rmrk, this.chain, asset);
+        return undefined;
     }
 
 }
