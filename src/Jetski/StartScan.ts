@@ -3,10 +3,12 @@ import {Blockchain} from "../Blockchains/Blockchain";
 import {Kusama} from "../Blockchains/Kusama";
 import {ApiPromise} from "@polkadot/api";
 import {Jetski} from "./Jetski";
-import {Mint} from "../Remark/Interactions/Mint";
+
 
 
 export const startScanner = async (opts: Option)=>{
+
+    // Launch jetski from yarn
 
     let chain : Blockchain;
 
@@ -26,25 +28,51 @@ export const startScanner = async (opts: Option)=>{
     const jetski = new Jetski(chain);
     let api: ApiPromise = await jetski.getApi();
 
-    setInterval(async()=>{
+    let currentBlock: number = 0;
 
-        jetski.getBlockContent(blockNumber, api).then(r=>{
-            if(r.length > 0){
-                console.log(r);
-                process.exit();
-            }
-        }).catch(e=>{
-            console.error(e);
-        });
-
-        blockNumber ++;
-
-    }, 1000 / 20)
+    startJetskiLoop(jetski, api, currentBlock, blockNumber);
 
 }
 
 
+
+
+function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, blockNumber: number)
+{
+    // launch the loop on blocks
+    let interval: NodeJS.Timeout =  setInterval(async()=>{
+
+        if (!api.isConnected) {
+            // if Api disconnect
+            clearInterval(interval);
+            console.log('API is disconnected, waiting for reconnect...');
+
+            api = await jetski.getApi();
+            console.log('API reconnected, loop will now restart');
+
+            startJetskiLoop(jetski, api, --currentBlock, blockNumber);
+        }
+
+        jetski.getBlockContent(blockNumber, api)
+            .then(r=>{
+                if(r.length > 0){
+                    console.log(r);
+                }
+            }).catch(e=>{
+                console.error(e);
+            });
+
+        blockNumber ++;
+
+    }, 1000 / 20)
+}
+
+
+
+
 export const scan = async (opts: Option)=>{
+    // scan only one block
+
     let chain : Blockchain = new Kusama();
     const jetski = new Jetski(chain);
 

@@ -4,6 +4,8 @@ import {Mint} from "../Remark/Interactions/Mint";
 import {Transaction} from "../Remark/Transaction";
 import {MintNft} from "../Remark/Interactions/MintNft";
 import {Send} from "../Remark/Interactions/Send";
+import {Buy} from "../Remark/Interactions/Buy";
+import {Emote} from "../Remark/Interactions/Emote";
 
 
 export class RmrkReader
@@ -19,6 +21,7 @@ export class RmrkReader
 
     public readInteraction(rmrk: string): Interaction|null
     {
+        // Dispatch for object creation
 
         if(rmrk.includes('::')){
 
@@ -38,6 +41,12 @@ export class RmrkReader
 
                     case 'send':
                         return new Send(rmrk, this.chain, this.transaction);
+
+                    case 'buy':
+                        return new Buy(rmrk, this.chain, this.transaction);
+
+                    case 'emote':
+                        return new Emote(rmrk, this.chain, this.transaction);
 
                     default:
                         return null;

@@ -21,7 +21,7 @@ export class Jetski
 {
 
     public chain: Blockchain;
-    private wsProvider: WsProvider;
+    private readonly wsProvider: WsProvider;
 
 
     constructor(chain: Blockchain) {
@@ -44,7 +44,6 @@ export class Jetski
         return new Promise(async (resolve, reject)=>{
 
             let blockRmrk: Array<Promise<Interaction|string>> = [];
-
             let blockHash: any;
 
             try{
@@ -54,6 +53,7 @@ export class Jetski
                 reject('No Block');
             }
 
+            // Get block from APi
             const block = await api.rpc.chain.getBlock(blockHash);
 
             let blockId = blockNumber;
@@ -75,25 +75,29 @@ export class Jetski
 
                 const dateTimestamp = Number(blockTimestamp) * 1000;
                 const date = new Date(dateTimestamp);
-
+                // Display block date and number
                 console.log('block ' + blockNumber + ' ' + date);
 
 
                 if(section === "system" && method === "remark"){
+                    // If block have simple remark
 
                     const remark = args.toString();
                     const signer = ex.signer.toString();
                     const hash = ex.hash.toHex();
 
+                    // Create transaction with block's info
                     const tx = new Transaction(blockId, hash, blockTimestamp, this.chain, signer);
 
                     if(remark.indexOf("") === 0){
+                        // Create object from rmrk
                         blockRmrk.push(this.getObjectFromRemark(remark, tx));
                     }
                 }
 
 
                 if(section === "utility" && method === "batch"){
+                    // If rmrks are in batch
 
                     const arg = args.toString();
                     const batch = JSON.parse(arg);
@@ -101,25 +105,22 @@ export class Jetski
                     const signer = ex.signer.toString();
                     const hash = ex.hash.toHex();
 
-                    const transfert: Transfert|null = Jetski.checkIfTransfer(batch);
+                    // Transfer object for complement Buy data (payment address and value)
+                    const transfert: Transfert|undefined = Jetski.checkIfTransfer(batch);
 
                     let i = 1;
 
                     for (const rmrkObj of batch){
-
+                        // Increment tx Hash
                         const txHash = hash + '-' + i;
 
-                        let destination: string|undefined = undefined;
-                        let value: string|undefined = undefined;
-
-                        if(transfert != null){
-                            destination = transfert.destination;
-                            value = transfert.value;
-                        }
+                        const destination = transfert ? transfert.destination : undefined;
+                        const value = transfert ? transfert.value : undefined;
 
                         const tx = new Transaction(blockId, txHash, blockTimestamp, this.chain, signer, destination, value);
 
                         if(rmrkObj.args.hasOwnProperty('_remark')){
+                            // If batch have rmrk
                             blockRmrk.push(this.getObjectFromRemark(rmrkObj.args._remark, tx, i));
                         }
                         i += 1;
@@ -131,19 +132,100 @@ export class Jetski
             }
 
             return Promise.all(blockRmrk)
-                .then(result=>{
-                    this.getMetadataContent(result).then(rmrkWithMeta=>{
-                        resolve (rmrkWithMeta);
-                    });
+                .then(async result=>{
+                    // if rmrk Objects are created, call for meta
+                    let interactions;
+
+                    try{
+
+                        interactions = await this.getMetadataContent(result);
+                        resolve (interactions);
+
+                    }catch(e){
+                        // retry if doesn't work
+                        try{
+                            interactions = await this.getMetadataContent(result);
+                            resolve (interactions);
+                        }catch(e){
+                            console.error(e);
+                            reject (e);
+                        }
+
+                    }
+
                 })
                 .catch(e=>{
-                    // console.log(e);
+                    console.error(e);
                 })
 
         })
 
+    }
+
+
+    // Check if batch have rmrk and transfer for Buy
+    private static checkIfTransfer(batch: any): Transfert|undefined
+    {
+
+        let isRemark: boolean = false;
+        let isTransfert: boolean = false;
+
+        const transfert: Transfert = {
+            destination : "",
+            value: ""
+        };
+
+        for(let i = 0; i<batch.length; i++){
+
+            const args = batch[i].args;
+
+            if(args.hasOwnProperty('_remark')){
+                isRemark = true;
+            }
+
+            if(isRemark){
+                if(args.hasOwnProperty('dest') && args.hasOwnProperty('value')){
+                    transfert.destination = args.dest.Id;
+                    transfert.value = args.value;
+                    isTransfert = true;
+                }
+            }
+        }
+
+        return isTransfert ? transfert : undefined;
+    }
+
+
+
+    private async getMetadataContent(interactions: Array<Interaction|string>): Promise<Array<Interaction>>
+    {
+        // Resolve all promises with metadata
+        return new Promise(async (resolve)=>{
+
+            let rmrkWithMeta: Array<Promise<Interaction>|Interaction> = [];
+            let i: number = 0;
+
+            for(const rmrk of interactions){
+
+                if(rmrk instanceof Mint || rmrk instanceof  MintNft){
+                    rmrkWithMeta.push(this.callMeta(rmrk, i));
+                }else if (rmrk instanceof Interaction){
+                    rmrkWithMeta.push(rmrk);
+                }
+                i++;
+            }
+
+            return Promise.all(rmrkWithMeta)
+                .then((remarks)=>{
+                    resolve (remarks);
+                }).catch(e=>{
+                    // console.error(e);
+                })
+
+        })
 
     }
+
 
 
     private async callMeta(remark: Interaction, index?: number): Promise<Interaction>
@@ -183,89 +265,9 @@ export class Jetski
 
 
 
-    private static checkIfTransfer(batch: any): Transfert|null
-    {
-
-        let isRemark: boolean = false;
-        let isTransfert: boolean = false;
-
-        const transfert: Transfert = {
-            destination : "",
-            value: ""
-        };
-
-        for(let i = 0; i<batch.length; i++){
-
-            if(batch[i].args.hasOwnProperty('_remark')){
-                isRemark = true;
-            }
-
-            if(isRemark){
-                if(batch[i].args.hasOwnProperty('dest') && batch[i].args.hasOwnProperty('value')){
-                    transfert.destination = batch[i].args.dest.Id;
-                    transfert.value = batch[i].args.value;
-                    isTransfert = true;
-                }
-            }
-        }
-
-        return isTransfert ? transfert : null;
-
-    }
-
-
-
-    // private async callMeta(entity: Entity, index?: number): Promise<MetaData|null>
-    // {
-    //
-    //     return MetaData.getMetaData(entity.url, index)
-    //         .then(meta => {
-    //             return meta;
-    //         })
-    //         .catch(e => {
-    //             console.log(e);
-    //             return null;
-    //         });
-    //
-    // }
-
-
-
-    private async getMetadataContent(interactions: Array<Interaction|string>): Promise<Array<Interaction>>
-    {
-
-        return new Promise(async (resolve)=>{
-
-            let rmrkWithMeta: Array<Promise<Interaction>|Interaction> = [];
-            let i: number = 0;
-
-            for(const rmrk of interactions){
-
-                if(rmrk instanceof Mint || rmrk instanceof  MintNft){
-                    rmrkWithMeta.push(this.callMeta(rmrk, i));
-                }else if (rmrk instanceof Interaction){
-                    rmrkWithMeta.push(rmrk);
-                }
-                i++;
-            }
-
-            return Promise.all(rmrkWithMeta)
-                .then((remarks)=>{
-                    resolve (remarks);
-                }).catch(e=>{
-                    // console.error(e);
-                })
-
-        })
-
-    }
-
-
-
-
     public getObjectFromRemark(remark: string, transaction: Transaction, batchIndex?: number): Promise<Interaction|string>
     {
-
+        // Promise create an object with rmrk
         return new Promise((resolve)=>{
 
             const uri = hexToString(remark);

@@ -55,8 +55,9 @@ export abstract class Interaction extends Remark
 
 
 
-    protected assetFromComputedId(rmrkArray: Array<string>): NftInterface|null
+    protected assetFromComputedId(rmrkArray: Array<string>): NftInterface|undefined
     {
+        // Return NftInterface from computedId
 
         const isComputed = rmrkArray.pop();
         let computedId: string = "";
@@ -80,7 +81,7 @@ export abstract class Interaction extends Remark
 
         }catch(e){
             console.error(e);
-            return null;
+            return undefined;
         }
     }
 

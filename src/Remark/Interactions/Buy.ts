@@ -21,8 +21,7 @@ export class Buy extends Interaction
 
         const nft = this.assetFromComputedId(rmrkArray);
 
-        if(typeof nft === "object"){
-            //@ts-ignore
+        if(nft){
             return new Asset(this.rmrk, this.chain, nft);
         }
 
