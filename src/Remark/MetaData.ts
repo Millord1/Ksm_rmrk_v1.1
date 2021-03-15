@@ -43,6 +43,7 @@ export class MetaData
 
     private static getCorrectUrl(url: string): string
     {
+        // Modify the url for ipfs calls
 
         const urls: Array<string> = url.split('/');
         const shortUrl = urls.pop();
@@ -60,6 +61,7 @@ export class MetaData
     {
 
         let timeToWait: number = 0;
+        // Use promise index for increment the time out
 
         if(batchIndex && batchIndex != 0){
             timeToWait = batchIndex * this.delayForCalls;
@@ -82,8 +84,10 @@ export class MetaData
                     if(this.readyState == 4 && this.status == 200){
 
                         try{
+                            // Try to create a MetadataInputs with parsing
                             response = JSON.parse(this.responseText);
                         }catch(e){
+                            // return empty object
                             response = {
                                 external_url : "",
                                 image : "",
@@ -91,7 +95,7 @@ export class MetaData
                                 name : "",
                                 attributes : [],
                                 background_color : "",
-                                animation_url: ""
+                                animation_url : ""
                             };
                             console.error(e.message + "\n for the MetaData url : " + url);
                         }
@@ -102,6 +106,8 @@ export class MetaData
                         reject ('request : ' + this.status);
                     }else if(this.readyState == 4 && this.status == 400){
                         reject('Bad url : ' + url);
+                    }else if(this.readyState == 4 && this.status == 500){
+                        reject('Something is bad with this request, error ' + this.status);
                     }
 
                 }

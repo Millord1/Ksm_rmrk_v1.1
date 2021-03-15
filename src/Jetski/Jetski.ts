@@ -10,7 +10,7 @@ import {Entity} from "../Remark/Entities/Entity";
 import {MintNft} from "../Remark/Interactions/MintNft";
 
 
-interface Transfert
+interface Transfer
 {
     destination: string,
     value: string
@@ -106,7 +106,7 @@ export class Jetski
                     const hash = ex.hash.toHex();
 
                     // Transfer object for complement Buy data (payment address and value)
-                    const transfert: Transfert|undefined = Jetski.checkIfTransfer(batch);
+                    const transfer: Transfer|undefined = Jetski.checkIfTransfer(batch);
 
                     let i = 1;
 
@@ -114,8 +114,8 @@ export class Jetski
                         // Increment tx Hash
                         const txHash = hash + '-' + i;
 
-                        const destination = transfert ? transfert.destination : undefined;
-                        const value = transfert ? transfert.value : undefined;
+                        const destination = transfer ? transfer.destination : undefined;
+                        const value = transfer ? transfer.value : undefined;
 
                         const tx = new Transaction(blockId, txHash, blockTimestamp, this.chain, signer, destination, value);
 
@@ -137,10 +137,8 @@ export class Jetski
                     let interactions;
 
                     try{
-
                         interactions = await this.getMetadataContent(result);
                         resolve (interactions);
-
                     }catch(e){
                         // retry if doesn't work
                         try{
@@ -150,7 +148,6 @@ export class Jetski
                             console.error(e);
                             reject (e);
                         }
-
                     }
 
                 })
@@ -163,14 +160,15 @@ export class Jetski
     }
 
 
-    // Check if batch have rmrk and transfer for Buy
-    private static checkIfTransfer(batch: any): Transfert|undefined
+
+    private static checkIfTransfer(batch: any): Transfer|undefined
     {
+        // Check if batch have rmrk and transfer for Buy
 
         let isRemark: boolean = false;
         let isTransfert: boolean = false;
 
-        const transfert: Transfert = {
+        const transfert: Transfer = {
             destination : "",
             value: ""
         };
