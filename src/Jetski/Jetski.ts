@@ -10,6 +10,13 @@ import {Entity} from "../Remark/Entities/Entity";
 import {MintNft} from "../Remark/Interactions/MintNft";
 
 
+interface Transfert
+{
+    destination: string,
+    value: string
+}
+
+
 export class Jetski
 {
 
@@ -81,7 +88,6 @@ export class Jetski
                     const tx = new Transaction(blockId, hash, blockTimestamp, this.chain, signer);
 
                     if(remark.indexOf("") === 0){
-                        // const buildRemark = await this.rmrkToObject(remark, tx);
                         blockRmrk.push(this.getObjectFromRemark(remark, tx));
                     }
                 }
@@ -95,16 +101,25 @@ export class Jetski
                     const signer = ex.signer.toString();
                     const hash = ex.hash.toHex();
 
+                    const transfert: Transfert|null = Jetski.checkIfTransfer(batch);
+
                     let i = 1;
 
                     for (const rmrkObj of batch){
 
                         const txHash = hash + '-' + i;
 
-                        const tx = new Transaction(blockId, txHash, blockTimestamp, this.chain, signer);
+                        let destination: string|undefined = undefined;
+                        let value: string|undefined = undefined;
+
+                        if(transfert != null){
+                            destination = transfert.destination;
+                            value = transfert.value;
+                        }
+
+                        const tx = new Transaction(blockId, txHash, blockTimestamp, this.chain, signer, destination, value);
 
                         if(rmrkObj.args.hasOwnProperty('_remark')){
-                            // const buildRemark = await this.rmrkToObject(rmrkObj.args._remark, tx, i);
                             blockRmrk.push(this.getObjectFromRemark(rmrkObj.args._remark, tx, i));
                         }
                         i += 1;
@@ -165,6 +180,39 @@ export class Jetski
         })
 
     }
+
+
+
+    private static checkIfTransfer(batch: any): Transfert|null
+    {
+
+        let isRemark: boolean = false;
+        let isTransfert: boolean = false;
+
+        const transfert: Transfert = {
+            destination : "",
+            value: ""
+        };
+
+        for(let i = 0; i<batch.length; i++){
+
+            if(batch[i].args.hasOwnProperty('_remark')){
+                isRemark = true;
+            }
+
+            if(isRemark){
+                if(batch[i].args.hasOwnProperty('dest') && batch[i].args.hasOwnProperty('value')){
+                    transfert.destination = batch[i].args.dest.Id;
+                    transfert.value = batch[i].args.value;
+                    isTransfert = true;
+                }
+            }
+        }
+
+        return isTransfert ? transfert : null;
+
+    }
+
 
 
     // private async callMeta(entity: Entity, index?: number): Promise<MetaData|null>

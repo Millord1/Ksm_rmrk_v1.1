@@ -7,6 +7,7 @@ export class Transaction
     public timestamp: string;
     public source: string;
     public destination?: string;
+    public value?: string;
     public chain: Blockchain;
 
     constructor(
@@ -15,7 +16,8 @@ export class Transaction
         timestamp: string,
         chain: Blockchain,
         source: string,
-        destination?: string
+        destination?: string,
+        value?: string
     ){
 
         this.blockId = blockId;
@@ -30,6 +32,8 @@ export class Transaction
         }else{
             this.destination = destination;
         }
+
+        this.value = value;
 
     }
 }
