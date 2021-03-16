@@ -3,6 +3,8 @@ import {Blockchain} from "../Blockchains/Blockchain";
 import {Kusama} from "../Blockchains/Kusama";
 import {ApiPromise} from "@polkadot/api";
 import {Jetski} from "./Jetski";
+import {Mint} from "../Remark/Interactions/Mint";
+import {GossiperFactory} from "../Gossiper/GossiperFactory";
 
 
 
@@ -51,20 +53,32 @@ function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, 
             console.log('API reconnected, loop will now restart');
 
             startJetskiLoop(jetski, api, --currentBlock, blockNumber);
+
+        }else{
+
+            if(currentBlock != blockNumber){
+                currentBlock = blockNumber;
+
+                jetski.getBlockContent(blockNumber, api)
+                    .then(remarks=>{
+                        if(remarks.length > 0){
+                            for(const rmrk of remarks){
+                                const gossip = new GossiperFactory(rmrk);
+                                const gossiper = gossip.getGossiper();
+                                gossiper?.gossip();
+                            }
+                        }
+                        blockNumber ++;
+                    }).catch(e=>{
+                        console.error(e);
+                        console.log('Waiting for block ...');
+                        setTimeout(()=>{
+                            currentBlock --;
+                        }, 10000);
+                    });
+            }
         }
-
-        jetski.getBlockContent(blockNumber, api)
-            .then(r=>{
-                if(r.length > 0){
-                    console.log(r);
-                }
-            }).catch(e=>{
-                console.error(e);
-            });
-
-        blockNumber ++;
-
-    }, 1000 / 20)
+    }, 1000 / 50)
 }
 
 
@@ -83,7 +97,9 @@ export const scan = async (opts: Option)=>{
 
     jetski.getBlockContent(blockN, api).then(result=>{
         for(const rmrk of result){
-            console.log(rmrk);
+            const gossip = new GossiperFactory(rmrk);
+            const gossiper = gossip.getGossiper();
+            gossiper?.gossip();
         }
     });
 }

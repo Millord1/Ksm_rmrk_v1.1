@@ -57,10 +57,24 @@ export class MetaData
     }
 
 
+
+    public static getCloudFlareUrl(url: string): string
+    {
+        const urls: Array<string> = url.split('/');
+        const shortUrl = urls.pop();
+
+        if(urls.includes('ipfs')){
+            return "https://cloudflare-ipfs.com/ipfs/" + shortUrl;
+        }else{
+            return url;
+        }
+    }
+
+
     public static async getMetaData(url: string, batchIndex?: number): Promise<MetaData>
     {
 
-        let timeToWait: number = 0;
+        let timeToWait: number = 100;
         // Use promise index for increment the time out
 
         if(batchIndex && batchIndex != 0){

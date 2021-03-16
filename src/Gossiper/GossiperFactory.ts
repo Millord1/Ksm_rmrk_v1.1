@@ -5,12 +5,13 @@ import {Send} from "../Remark/Interactions/Send";
 import {EventGossiper} from "./EventGossiper";
 import {Buy} from "../Remark/Interactions/Buy";
 import {MintNft} from "../Remark/Interactions/MintNft";
+import {Asset} from "../Remark/Entities/Asset";
 
 
 export class GossiperFactory
 {
 
-    private rmrk: Interaction;
+    private readonly rmrk: Interaction;
 
     constructor(rmrk: Interaction) {
         this.rmrk = rmrk;
@@ -19,7 +20,7 @@ export class GossiperFactory
 
     public getGossiper()
     {
-
+        // use instanceof for typescript typing
         if(this.rmrk instanceof Mint){
 
             const entity = this.rmrk.collection ? this.rmrk.collection : undefined;
@@ -34,7 +35,22 @@ export class GossiperFactory
 
         }else if(this.rmrk instanceof MintNft){
 
-            // TODO
+            let asset: Asset;
+            if(this.rmrk.asset){
+                asset = this.rmrk.asset;
+            }else{
+                return undefined
+            }
+
+            const entity = new EntityGossiper(asset, this.rmrk.transaction.blockId);
+            entity.gossip().then(()=>{
+                //@ts-ignore Here this.rmrk = MintNft (else if condition)
+                return new EventGossiper(this.rmrk);
+            }).catch(e=>{
+                console.error(e);
+                return undefined;
+            });
+
 
         }
 

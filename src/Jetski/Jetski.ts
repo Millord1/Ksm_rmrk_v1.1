@@ -8,6 +8,8 @@ import {MetaData} from "../Remark/MetaData";
 import {Mint} from "../Remark/Interactions/Mint";
 import {Entity} from "../Remark/Entities/Entity";
 import {MintNft} from "../Remark/Interactions/MintNft";
+import {load} from "ts-dotenv";
+import {strict as assert} from "assert";
 
 
 interface Transfer
@@ -35,6 +37,22 @@ export class Jetski
         let api: ApiPromise;
         api = await ApiPromise.create({provider: this.wsProvider});
         return api;
+    }
+
+
+
+    public static getJwt()
+    {
+        const env = load({
+            JWT: String
+        })
+
+        assert.ok(env.JWT != "jwt_code");
+        assert.ok(env.JWT != "");
+        assert.ok(env.JWT != null);
+        assert.ok(env.JWT != undefined);
+
+        return env.JWT;
     }
 
 
