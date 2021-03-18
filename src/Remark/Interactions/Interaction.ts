@@ -57,7 +57,24 @@ export abstract class Interaction extends Remark
 
     protected assetFromComputedId(rmrkArray: Array<string>): NftInterface|undefined
     {
-        // Return NftInterface from computedId
+        // Return NftInterface from computedId, depending version of remmark
+
+        const version: string = rmrkArray[2];
+
+        let nft: NftInterface|undefined = undefined;
+
+        if(version.includes("1.0.0") || this.version.includes("1.0.0")){
+            nft = Interaction.nftFromComputedVOne(rmrkArray);
+        }
+
+        return nft;
+
+    }
+
+
+    private static nftFromComputedVOne(rmrkArray: Array<string>)
+    {
+        // Transform computed ID to NftInterface with v1.0.0 compatibility
 
         const isComputed = rmrkArray.pop();
         let computedId: string = "";
