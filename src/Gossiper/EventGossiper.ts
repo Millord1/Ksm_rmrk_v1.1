@@ -3,7 +3,7 @@ import {Send} from "../Remark/Interactions/Send";
 import {MintNft} from "../Remark/Interactions/MintNft";
 import {Buy} from "../Remark/Interactions/Buy";
 import {Jetski} from "../Jetski/Jetski";
-import {CSCanonizeManager} from "canonizer";
+import {CSCanonizeManager} from "canonizer/src/canonizer/CSCanonizeManager";
 import {KusamaBlockchain} from "canonizer/src/canonizer/Kusama/KusamaBlockchain";
 import {BlockchainAddress} from "canonizer/src/canonizer/BlockchainAddress";
 import {BlockchainContract} from "canonizer/src/canonizer/BlockchainContract";
@@ -12,8 +12,6 @@ import {BlockchainEvent} from "canonizer/src/canonizer/BlockchainEvent";
 
 export class EventGossiper
 {
-
-    private interaction: string;
 
     private readonly collectionId: string;
     private readonly sn: string;
@@ -25,7 +23,6 @@ export class EventGossiper
 
 
     constructor(remark: Send|MintNft|Buy) {
-        this.interaction = remark.constructor.name.toLowerCase();
         this.collectionId = remark.asset ? remark.asset.assetId : "";
         this.sn = remark.asset ? remark.asset.token.sn : "";
         this.signer = remark.transaction.source;
@@ -37,7 +34,6 @@ export class EventGossiper
 
     public async gossip()
     {
-
         const jwt = Jetski.getJwt();
 
         const canonizeManager = new CSCanonizeManager({connector:{gossipUrl:'http://arkam.everdreamsoft.com/alex/gossip',jwt:jwt}});

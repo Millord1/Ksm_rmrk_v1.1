@@ -18,7 +18,7 @@ export class GossiperFactory
     }
 
 
-    public getGossiper()
+    public async getGossiper()
     {
         // use instanceof for typescript typing
         if(this.rmrk instanceof Mint){
@@ -35,6 +35,10 @@ export class GossiperFactory
 
         }else if(this.rmrk instanceof MintNft){
 
+            const mintNft: MintNft = this.rmrk;
+
+
+
             let asset: Asset;
             if(this.rmrk.asset){
                 asset = this.rmrk.asset;
@@ -43,15 +47,9 @@ export class GossiperFactory
             }
 
             const entity = new EntityGossiper(asset, this.rmrk.transaction.blockId);
-            entity.gossip().then(()=>{
-                //@ts-ignore Here this.rmrk = MintNft (else if condition)
-                return new EventGossiper(this.rmrk);
-            }).catch(e=>{
-                console.error(e);
-                return undefined;
-            });
+            await entity.gossip();
 
-
+            return new EventGossiper(mintNft);
         }
 
         return undefined;
