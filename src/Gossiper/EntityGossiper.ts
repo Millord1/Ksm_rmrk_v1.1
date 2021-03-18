@@ -30,8 +30,8 @@ export class EntityGossiper
         // use instanceof for typescript typing
         if(entity instanceof Asset){
 
-            this.collectionId = entity.token.contractId;
-            this.assetId = entity.assetId;
+            this.collectionId = entity.token.collectionId;
+            this.assetId = entity.contractId;
             this.assetName = entity.name;
 
         }else if (entity instanceof Collection){

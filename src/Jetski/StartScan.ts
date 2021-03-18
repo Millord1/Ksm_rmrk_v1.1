@@ -233,12 +233,8 @@ function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, 
                         if(rmrksWithMeta.length > 0){
                             // Gossip if array not empty
                             for(const rmrk of rmrksWithMeta){
-
                                 const gossip = new GossiperFactory(rmrk);
                                 const gossiper = await gossip.getGossiper();
-                                if(!gossiper){
-                                    console.log(rmrk);
-                                }
                                 gossiper?.gossip();
                             }
                         }
@@ -275,7 +271,6 @@ export const scan = async (opts: Option)=>{
         const rmrks = await metaDataVerifier(result);
 
         for(const rmrk of rmrks){
-
             const gossip = new GossiperFactory(rmrk);
             const gossiper = await gossip.getGossiper();
             gossiper?.gossip();

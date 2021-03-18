@@ -20,33 +20,30 @@ export class GossiperFactory
 
     public async getGossiper()
     {
-        // use instanceof for typescript typing
+        // Dispatch for gossiper
         if(this.rmrk instanceof Mint){
 
-            const entity = this.rmrk.collection ? this.rmrk.collection : undefined;
-            if(entity){
-                return new EntityGossiper(entity, this.rmrk.transaction.blockId);
+            if(this.rmrk.collection){
+                return new EntityGossiper(this.rmrk.collection, this.rmrk.transaction.blockId);
             }
             return undefined;
 
         }else if(this.rmrk instanceof Send || this.rmrk instanceof Buy){
 
-            return new EventGossiper(this.rmrk);
+            if(this.rmrk.asset){
+                return new EventGossiper(this.rmrk);
+            }
+            return undefined;
 
         }else if(this.rmrk instanceof MintNft){
 
             const mintNft: MintNft = this.rmrk;
 
-
-
-            let asset: Asset;
-            if(this.rmrk.asset){
-                asset = this.rmrk.asset;
-            }else{
+            if(!this.rmrk.asset){
                 return undefined
             }
 
-            const entity = new EntityGossiper(asset, this.rmrk.transaction.blockId);
+            const entity = new EntityGossiper(this.rmrk.asset, this.rmrk.transaction.blockId);
             await entity.gossip();
 
             return new EventGossiper(mintNft);

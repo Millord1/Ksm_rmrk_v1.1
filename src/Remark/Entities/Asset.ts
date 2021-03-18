@@ -8,7 +8,7 @@ export class Asset extends Entity
 {
     public name: string;
     public instance: string;
-    public assetId: string;
+    public contractId: string;
 
     public token: Token;
 
@@ -17,7 +17,7 @@ export class Asset extends Entity
 
         this.name = nftData.name;
         this.instance = nftData.instance;
-        this.assetId = nftData.computedId;
+        this.contractId = nftData.contractId;
 
         this.token = new Token(nftData.sn, nftData.collection);
     }

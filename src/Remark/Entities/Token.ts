@@ -5,7 +5,7 @@ export class Token
 {
 
     public sn: string;
-    public contractId: string;
+    public collectionId: string;
     public transferable?: boolean;
     public contract?: BlockchainContract;
 
@@ -15,9 +15,9 @@ export class Token
 
         if(contract instanceof BlockchainContract){
             this.contract = contract;
-            this.contractId = this.contract.id;
+            this.collectionId = this.contract.id;
         }else{
-            this.contractId = contract;
+            this.collectionId = contract;
         }
     }
 

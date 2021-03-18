@@ -1,4 +1,3 @@
-
 import {Send} from "../Remark/Interactions/Send";
 import {MintNft} from "../Remark/Interactions/MintNft";
 import {Buy} from "../Remark/Interactions/Buy";
@@ -13,7 +12,7 @@ import {BlockchainEvent} from "canonizer/src/canonizer/BlockchainEvent";
 export class EventGossiper
 {
 
-    private readonly collectionId: string;
+    private readonly contractId: string;
     private readonly sn: string;
     private readonly signer: string;
     private readonly receiver: string;
@@ -23,7 +22,7 @@ export class EventGossiper
 
 
     constructor(remark: Send|MintNft|Buy) {
-        this.collectionId = remark.asset ? remark.asset.assetId : "";
+        this.contractId = remark.asset ? remark.asset.contractId : "";
         this.sn = remark.asset ? remark.asset.token.sn : "";
         this.signer = remark.transaction.source;
         this.receiver = remark.transaction.destination ? remark.transaction.destination : "";
@@ -34,6 +33,10 @@ export class EventGossiper
 
     public async gossip()
     {
+        if(this.sn == ""){
+            return undefined;
+        }
+
         const jwt = Jetski.getJwt();
 
         const canonizeManager = new CSCanonizeManager({connector:{gossipUrl:'http://arkam.everdreamsoft.com/alex/gossip',jwt:jwt}});
@@ -43,7 +46,7 @@ export class EventGossiper
         const receiver = new BlockchainAddress(blockchain.addressFactory, this.receiver, sandra);
         const address = new BlockchainAddress(blockchain.addressFactory, this.signer, sandra);
 
-        const contract = new BlockchainContract(blockchain.contractFactory, this.collectionId, sandra,new RmrkContractStandard(canonizeManager));
+        const contract = new BlockchainContract(blockchain.contractFactory, this.contractId, sandra,new RmrkContractStandard(canonizeManager));
         const contractStandard = new RmrkContractStandard(canonizeManager, this.sn);
 
         let event = new BlockchainEvent(blockchain.eventFactory, address, receiver, contract, this.txId, this.timestamp, '1', blockchain, this.blockId, contractStandard, sandra);
