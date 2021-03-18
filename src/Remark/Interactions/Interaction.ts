@@ -11,7 +11,7 @@ export interface NftInterface
     metadata: string,
     currentOwner: string,
     instance: string,
-    computedId: string
+    contractId: string
 }
 
 
@@ -42,7 +42,7 @@ export abstract class Interaction extends Remark
 
     public getComputedId(nftData: NftInterface): NftInterface
     {
-        nftData.computedId = this.transaction.blockId + '-' + nftData.collection + '-' + nftData.instance + '-' + nftData.name;
+        nftData.contractId = this.transaction.blockId + '-' + nftData.collection + '-' + nftData.instance + '-' + nftData.name;
         return nftData;
     }
 
@@ -72,7 +72,7 @@ export abstract class Interaction extends Remark
     }
 
 
-    private static nftFromComputedVOne(rmrkArray: Array<string>)
+    private static nftFromComputedVOne(rmrkArray: Array<string>): NftInterface|undefined
     {
         // Transform computed ID to NftInterface with v1.0.0 compatibility
 
@@ -83,17 +83,29 @@ export abstract class Interaction extends Remark
             computedId = isComputed;
         }
 
+        const assetData: Array<string> = computedId.split('-');
+
+        if(assetData.length != 5 || Number.isNaN(assetData[4]) || Number.isNaN(assetData[0])){
+            return undefined;
+        }
+
+        const sn: string = assetData[4];
+
+        if(computedId.includes(sn)){
+            // delete sn from computedID
+            computedId = computedId.replace('-'+sn, "");
+        }
+
         try{
-            const assetData: Array<string> = computedId.split('-');
 
             return {
                 collection: assetData[1],
-                sn: assetData[4],
+                sn: sn,
                 name: assetData[3],
                 metadata: "",
                 currentOwner: "",
                 instance: assetData[2],
-                computedId: computedId
+                contractId: computedId
             };
 
         }catch(e){
