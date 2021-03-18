@@ -73,16 +73,15 @@ export class MetaData
 
     public static async getMetaData(url: string, batchIndex?: number): Promise<MetaData>
     {
-
         let timeToWait: number = 100;
-        // Use promise index for increment the time out
+        // Use array index for increment the time out
 
         if(batchIndex && batchIndex != 0){
             timeToWait = batchIndex * this.delayForCalls;
         }
 
         url = this.getCorrectUrl(url);
-
+        console.log(url);
         return new Promise((resolve, reject)=>{
 
             const request = new XMLHttpRequest();
@@ -100,6 +99,7 @@ export class MetaData
                         try{
                             // Try to create a MetadataInputs with parsing
                             response = JSON.parse(this.responseText);
+
                         }catch(e){
                             // return empty object
                             response = {

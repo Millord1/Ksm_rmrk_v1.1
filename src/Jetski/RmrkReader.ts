@@ -6,6 +6,7 @@ import {MintNft} from "../Remark/Interactions/MintNft";
 import {Send} from "../Remark/Interactions/Send";
 import {Buy} from "../Remark/Interactions/Buy";
 import {Emote} from "../Remark/Interactions/Emote";
+import {List} from "../Remark/Interactions/List";
 
 
 export class RmrkReader
@@ -47,6 +48,9 @@ export class RmrkReader
 
                     case 'emote':
                         return new Emote(rmrk, this.chain, this.transaction);
+
+                    case 'list':
+                        return new List(rmrk, this.chain, this.transaction);
 
                     default:
                         return null;

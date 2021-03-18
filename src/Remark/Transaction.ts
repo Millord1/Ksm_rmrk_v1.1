@@ -1,4 +1,5 @@
 import {Blockchain} from "../Blockchains/Blockchain";
+import {CSCanonizeManager} from "canonizer/src/canonizer/CSCanonizeManager";
 
 export class Transaction
 {
@@ -26,9 +27,8 @@ export class Transaction
         this.source = source;
         this.chain = chain;
 
-        // TODO add default Mint of Sandra
         if(destination === undefined){
-            this.destination = '0x0';
+            this.destination = CSCanonizeManager.mintIssuerAddressString;
         }else{
             this.destination = destination;
         }

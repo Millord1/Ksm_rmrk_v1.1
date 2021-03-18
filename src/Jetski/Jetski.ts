@@ -10,6 +10,7 @@ import {Entity} from "../Remark/Entities/Entity";
 import {MintNft} from "../Remark/Interactions/MintNft";
 import {load} from "ts-dotenv";
 import {strict as assert} from "assert";
+import {domainToASCII} from "url";
 
 
 interface Transfer
@@ -56,7 +57,7 @@ export class Jetski
     }
 
 
-    public async getBlockContent(blockNumber: number, api: ApiPromise): Promise<Array<Interaction>>
+    public async getBlockContent(blockNumber: number, api: ApiPromise, withMetaData: boolean = true): Promise<Array<Interaction>>
     {
 
         return new Promise(async (resolve, reject)=>{
@@ -151,11 +152,10 @@ export class Jetski
 
             return Promise.all(blockRmrk)
                 .then(async result=>{
-                    // if rmrk Objects are created, call for meta
                     let interactions;
-
                     try{
                         interactions = await this.getMetadataContent(result);
+
                         resolve (interactions);
                     }catch(e){
                         // retry if doesn't work
@@ -175,6 +175,22 @@ export class Jetski
 
         })
 
+    }
+
+
+
+
+    private deleteStrings(array: Array<string|Interaction>): Array<Interaction>
+    {
+        let arrayWithoutStrings: Array<Interaction> = [];
+
+        array.forEach((item)=>{
+            if(item instanceof Interaction){
+                arrayWithoutStrings.push(item);
+            }
+        })
+
+        return arrayWithoutStrings;
     }
 
 
@@ -213,7 +229,7 @@ export class Jetski
 
 
 
-    private async getMetadataContent(interactions: Array<Interaction|string>): Promise<Array<Interaction>>
+    public async getMetadataContent(interactions: Array<Interaction|string>): Promise<Array<Interaction>>
     {
         // Resolve all promises with metadata
         return new Promise(async (resolve)=>{

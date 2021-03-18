@@ -6,6 +6,7 @@ const {program} = require('commander');
 program.command("fetch")
     .option("--chain <chain>", "chain name")
     .option("--block <block>", "block number")
+    // .option("--meta <meta>", "with meta content", true)
     .action(startScanner);
 
 
