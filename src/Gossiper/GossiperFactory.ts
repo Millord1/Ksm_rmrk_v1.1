@@ -5,7 +5,6 @@ import {Send} from "../Remark/Interactions/Send";
 import {EventGossiper} from "./EventGossiper";
 import {Buy} from "../Remark/Interactions/Buy";
 import {MintNft} from "../Remark/Interactions/MintNft";
-import {Asset} from "../Remark/Entities/Asset";
 
 
 export class GossiperFactory
@@ -20,7 +19,7 @@ export class GossiperFactory
 
     public async getGossiper()
     {
-        // Dispatch for gossiper
+        // Dispatch for gossiper if rmrk is correct
         if(this.rmrk instanceof Mint){
 
             if(this.rmrk.collection){
@@ -37,16 +36,14 @@ export class GossiperFactory
 
         }else if(this.rmrk instanceof MintNft){
 
-            const mintNft: MintNft = this.rmrk;
-
             if(!this.rmrk.asset){
-                return undefined
+                return undefined;
             }
 
             const entity = new EntityGossiper(this.rmrk.asset, this.rmrk.transaction.blockId);
             await entity.gossip();
 
-            return new EventGossiper(mintNft);
+            return new EventGossiper(this.rmrk);
         }
 
         return undefined;
