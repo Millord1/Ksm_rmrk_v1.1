@@ -2,6 +2,7 @@ import {CollectionInterface, Interaction} from "./Interaction";
 import {Collection} from "../Entities/Collection";
 import {Blockchain} from "../../Blockchains/Blockchain";
 import {Transaction} from "../Transaction";
+import {Entity} from "../Entities/Entity";
 
 
 export class Mint extends Interaction
@@ -23,7 +24,7 @@ export class Mint extends Interaction
     private collectionFromRmrk(): Collection|null
     {
 
-        let rmrk = this.splitRmrk();
+        const rmrk = this.splitRmrk();
 
         let mintData: CollectionInterface
 
@@ -33,6 +34,8 @@ export class Mint extends Interaction
             console.log(e);
             return null;
         }
+
+        mintData = this.slugifyCollectionObj(mintData);
 
         return new Collection(this.rmrk, this.chain, mintData);
     }

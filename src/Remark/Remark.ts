@@ -12,7 +12,7 @@ export abstract class Remark
     {
         this.rmrk = rmrk;
         this.chain = chain;
-        this.version = version === undefined ? Remark.actualVersion : version;
+        this.version = version === undefined || version === "undefined" ? Remark.actualVersion : version;
     }
 
 }

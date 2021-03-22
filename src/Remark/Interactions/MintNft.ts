@@ -39,7 +39,8 @@ export class MintNft extends Interaction
             return null
         }
 
-        nftData = this.getComputedId(nftData);
+        nftData = this.addComputedId(nftData);
+        nftData = this.slugifyNftObj(nftData);
 
         return new Asset(this.rmrk, this.chain, nftData, version);
     }

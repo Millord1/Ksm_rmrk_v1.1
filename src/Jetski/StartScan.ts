@@ -14,7 +14,7 @@ import {Asset} from "../Remark/Entities/Asset";
 
 
 // Verify : 6420884
-// 6583396
+// 6501710
 
 
 export const startScanner = async (opts: Option)=>{
@@ -271,9 +271,10 @@ export const scan = async (opts: Option)=>{
         const rmrks = await metaDataVerifier(result);
 
         for(const rmrk of rmrks){
-            const gossip = new GossiperFactory(rmrk);
-            const gossiper = await gossip.getGossiper();
-            gossiper?.gossip();
+            console.log(rmrk);
+            // const gossip = new GossiperFactory(rmrk);
+            // const gossiper = await gossip.getGossiper();
+            // gossiper?.gossip();
         }
     });
 }

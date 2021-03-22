@@ -19,6 +19,6 @@ export class Asset extends Entity
         this.instance = nftData.instance;
         this.contractId = nftData.contractId;
 
-        this.token = new Token(nftData.sn, nftData.collection);
+        this.token = new Token(nftData.sn, nftData.collection, nftData.transferable);
     }
 }
