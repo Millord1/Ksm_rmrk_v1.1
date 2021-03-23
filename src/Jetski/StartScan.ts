@@ -11,30 +11,36 @@ import {Interaction} from "../Remark/Interactions/Interaction";
 import {Collection} from "../Remark/Entities/Collection";
 import {Entity} from "../Remark/Entities/Entity";
 import {Asset} from "../Remark/Entities/Asset";
+import {WestEnd} from "../Blockchains/WestEnd";
 
 
 // Verify : 6420884
-// 6501710
+// 6288186
+
+
+function getBlockchain(chainName: string)
+{
+
+    switch(chainName.toLowerCase()){
+
+        case 'westend':
+            return new WestEnd();
+
+        case"kusama":
+        default:
+            return new Kusama();
+
+    }
+}
+
 
 
 export const startScanner = async (opts: Option)=>{
 
     // Launch jetski from yarn
 
-    let chain : Blockchain;
-
-    //@ts-ignore
-    const withMeta: boolean = opts.meta;
-
-    //@ts-ignore
-    switch(opts.chain.toLowerCase()){
-
-        case"kusama":
-        default:
-            chain = new Kusama();
-            break;
-
-    }
+    // @ts-ignore
+    let chain : Blockchain = getBlockchain(opts.chain);
 
     // @ts-ignore
     let blockNumber = opts.block;
@@ -55,92 +61,12 @@ export const startScanner = async (opts: Option)=>{
 
 
 
-
-// Millord's hack for testing about meta
-function scanWithoutMeta(jetski: Jetski, api: ApiPromise, currentBlock: number, blockNumber: number)
-{
-
-    console.log("WITHOUT META IN RMRK");
-
-    // launch the loop on blocks
-    let interval: NodeJS.Timeout =  setInterval(async()=>{
-
-        let isContent: boolean = false;
-
-        if (!api.isConnected) {
-            // if Api disconnect
-            clearInterval(interval);
-            console.log('API is disconnected, waiting for reconnect...');
-
-            api = await jetski.getApi();
-            console.log('API reconnected, loop will now restart');
-
-            startJetskiLoop(jetski, api, --currentBlock, blockNumber);
-
-        }else{
-
-            if(currentBlock != blockNumber){
-                currentBlock = blockNumber;
-                isContent = true;
-
-                jetski.getBlockContent(blockNumber, api, false)
-                    .then(async remarks=>{
-                        isContent = true;
-                        // console.log(remarks);
-                        jetski.getMetadataContent(remarks)
-                            .then(async(result)=>{
-
-                                for(const rmrk of result){
-                                    const gossip = new GossiperFactory(rmrk);
-                                    const gossiper = await gossip.getGossiper();
-                                    gossiper?.gossip();
-                                }
-
-                            }).catch(async ()=>{
-
-                                jetski.getMetadataContent(remarks)
-                                    .then(async(result)=>{
-                                        for(const rmrk of result){
-                                            const gossip = new GossiperFactory(rmrk);
-                                            const gossiper = await gossip.getGossiper();
-                                            gossiper?.gossip();
-                                        }
-                                    }).catch(()=>{
-                                        console.error('Error with meta');
-                                        process.exit();
-                                });
-                        })
-                        blockNumber ++;
-
-                    }).catch(e=>{
-
-                        console.error(e);
-                        console.log('Waiting for block ...');
-                        setTimeout(()=>{
-                            currentBlock --;
-                        }, 5000);
-
-                    });
-            }
-        }
-        if(!isContent){
-            blockNumber ++;
-        }else{
-            // setTimeout(()=>{console.log('Wait for meta')}, 1000);
-            currentBlock = currentBlock - 50;
-        }
-    }, 1000 / 50)
-}
-
-
-
-
-
 async function metaDataVerifier(remarks: Array<Interaction>): Promise<Array<Interaction>>
 {
     return new Promise(async (resolve)=>{
 
         for( const rmrk of remarks ){
+
             // loop for checking if meta exists
             if(rmrk instanceof Mint){
 
@@ -179,6 +105,7 @@ async function metaDataVerifier(remarks: Array<Interaction>): Promise<Array<Inte
 async function metaDataCaller(entity: Entity, nbOfTry: number = 0): Promise<MetaData>
 {
     return new Promise((resolve, reject)=>{
+
         if(entity.url){
             // verify url existst
             MetaData.getMetaData(entity.url)
@@ -186,19 +113,19 @@ async function metaDataCaller(entity: Entity, nbOfTry: number = 0): Promise<Meta
                     resolve (metaData);
                 }).catch(e=>{
 
-                if(nbOfTry < 2){
-                    // try a second call meta if the first fail
-                    setTimeout(()=>{
-                        metaDataCaller(entity, nbOfTry++);
-                    }, 500);
-                }else{
-                    // if 2 calls meta are failed, reject
-                    reject(e);
-                }
+                    if(nbOfTry < 2){
+                        // try a second call meta if the first fail
+                        setTimeout(()=>{
+                            metaDataCaller(entity, nbOfTry++);
+                        }, 500);
+                    }else{
+                        // if 2 calls meta are failed, reject
+                        reject(e);
+                    }
 
-            })
-
+                })
         }
+
     })
 }
 
@@ -258,7 +185,8 @@ function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, 
 export const scan = async (opts: Option)=>{
     // scan only one block
 
-    let chain : Blockchain = new Kusama();
+    // @ts-ignore
+    let chain : Blockchain = getBlockchain(opts.chain);
     const jetski = new Jetski(chain);
 
     const api: ApiPromise = await jetski.getApi();

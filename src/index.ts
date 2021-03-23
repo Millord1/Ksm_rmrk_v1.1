@@ -11,6 +11,7 @@ program.command("fetch")
 
 
 program.command("scan")
+    .option("--chain <chain>", "chain name", "kusama")
     .option("--block <block>")
     .action(scan)
 

@@ -36,14 +36,13 @@ export class GossiperFactory
 
         }else if(this.rmrk instanceof MintNft){
 
-            if(!this.rmrk.asset){
-                return undefined;
+            if(this.rmrk.asset){
+                const entity = new EntityGossiper(this.rmrk.asset, this.rmrk.transaction.blockId);
+                await entity.gossip();
+
+                return new EventGossiper(this.rmrk);
             }
-
-            const entity = new EntityGossiper(this.rmrk.asset, this.rmrk.transaction.blockId);
-            await entity.gossip();
-
-            return new EventGossiper(this.rmrk);
+            return undefined;
         }
 
         return undefined;

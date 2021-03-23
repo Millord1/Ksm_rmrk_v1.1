@@ -2,6 +2,7 @@ import {Remark} from "../Remark";
 import {Blockchain} from "../../Blockchains/Blockchain";
 import {Transaction} from "../Transaction";
 import {Entity} from "../Entities/Entity";
+import {VersionChecker} from "../VersionChecker";
 
 
 export interface NftInterface
@@ -50,15 +51,15 @@ export abstract class Interaction extends Remark
     }
 
 
-    protected slugifyCollectionObj(colelctionData: CollectionInterface)
+    protected slugifyCollectionObj(collectionData: CollectionInterface)
     {
-        for(let [key, value] of Object.entries(colelctionData)){
+        for(let [key, value] of Object.entries(collectionData)){
             if(typeof value == "string"){
                 value = Entity.slugification(value);
             }
         }
 
-        return colelctionData;
+        return collectionData;
     }
 
 
@@ -90,7 +91,7 @@ export abstract class Interaction extends Remark
         let nft: NftInterface|undefined = undefined;
 
         if(version.includes("1.0.0") || this.version.includes("1.0.0")){
-            nft = Interaction.nftFromComputedVOne(rmrkArray);
+            nft = this.nftFromComputedVOne(rmrkArray);
         }
 
         if(nft){
@@ -102,7 +103,7 @@ export abstract class Interaction extends Remark
     }
 
 
-    private static nftFromComputedVOne(rmrkArray: Array<string>): NftInterface|undefined
+    protected nftFromComputedVOne(rmrkArray: Array<string>): NftInterface|undefined
     {
         // Transform computed ID to NftInterface with v1.0.0 compatibility
 
@@ -126,9 +127,11 @@ export abstract class Interaction extends Remark
             computedId = computedId.replace('-'+sn, "");
         }
 
+        let nft: NftInterface;
+
         try{
 
-            return {
+            nft =  {
                 collection: assetData[1],
                 sn: sn,
                 transferable: true,
@@ -143,7 +146,14 @@ export abstract class Interaction extends Remark
             console.error(e);
             return undefined;
         }
+
+        const versionChecker = new VersionChecker(this.version);
+        if(versionChecker.checkAssetVersion(nft)){
+            return nft;
+        }
+        return undefined;
     }
+
 
 
 }

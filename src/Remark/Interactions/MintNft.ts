@@ -3,6 +3,7 @@ import {Asset} from "../Entities/Asset";
 import {Blockchain} from "../../Blockchains/Blockchain";
 import {Transaction} from "../Transaction";
 import {CSCanonizeManager} from "canonizer/src/canonizer/CSCanonizeManager";
+import {VersionChecker} from "../VersionChecker";
 
 
 export class MintNft extends Interaction
@@ -24,25 +25,31 @@ export class MintNft extends Interaction
     }
 
 
-    private nftFromMintNft(): Asset|null
+    private nftFromMintNft(): Asset|undefined
     {
         const rmrkData = this.splitRmrk();
 
         const version: string = rmrkData[2];
 
-        let nftData: NftInterface;
+        let nftData : NftInterface;
 
         try{
             nftData = JSON.parse(rmrkData[rmrkData.length-1]);
         }catch(e){
             console.log(e);
-            return null
+            return undefined
         }
 
         nftData = this.addComputedId(nftData);
         nftData = this.slugifyNftObj(nftData);
 
-        return new Asset(this.rmrk, this.chain, nftData, version);
+        const versionChecker = new VersionChecker(this.version);
+
+        if(versionChecker.checkAssetVersion(nftData)){
+            return new Asset(this.rmrk, this.chain, nftData, version);
+        }
+
+        return undefined;
     }
 
 }

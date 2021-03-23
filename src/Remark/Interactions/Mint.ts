@@ -3,6 +3,7 @@ import {Collection} from "../Entities/Collection";
 import {Blockchain} from "../../Blockchains/Blockchain";
 import {Transaction} from "../Transaction";
 import {Entity} from "../Entities/Entity";
+import {VersionChecker} from "../VersionChecker";
 
 
 export class Mint extends Interaction
@@ -13,7 +14,7 @@ export class Mint extends Interaction
     public constructor(rmrk: string, chain: Blockchain, transaction: Transaction) {
         super(rmrk, chain, transaction);
 
-        const collection : Collection|null = this.collectionFromRmrk();
+        const collection : Collection|undefined = this.collectionFromRmrk();
 
         if(collection){
             this.collection = collection;
@@ -21,7 +22,7 @@ export class Mint extends Interaction
     }
 
 
-    private collectionFromRmrk(): Collection|null
+    private collectionFromRmrk(): Collection|undefined
     {
 
         const rmrk = this.splitRmrk();
@@ -32,12 +33,17 @@ export class Mint extends Interaction
             mintData = JSON.parse(rmrk[rmrk.length-1]);
         }catch(e){
             console.log(e);
-            return null;
+            return undefined;
         }
 
         mintData = this.slugifyCollectionObj(mintData);
 
-        return new Collection(this.rmrk, this.chain, mintData);
+        const versionChecker = new VersionChecker(this.version);
+
+        if(versionChecker.checkCollectionVersion(mintData)){
+            return new Collection(this.rmrk, this.chain, mintData);
+        }
+        return undefined;
     }
 
 }
