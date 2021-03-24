@@ -23,6 +23,8 @@ interface Transfer
 export class Jetski
 {
 
+    public static noBlock: string = "No Block";
+
     public chain: Blockchain;
     private readonly wsProvider: WsProvider;
 
@@ -69,7 +71,7 @@ export class Jetski
                 blockHash = await api.rpc.chain.getBlockHash(blockNumber);
             }catch(e){
                 // console.log(e);
-                reject('No Block');
+                reject(Jetski.noBlock);
             }
 
             // Get block from APi
@@ -79,7 +81,7 @@ export class Jetski
             let blockTimestamp: string = "";
 
             if(block.block == null){
-                reject(null);
+                reject(Jetski.noBlock);
             }
 
             for (const ex of block.block ? block.block.extrinsics : []){
@@ -155,7 +157,6 @@ export class Jetski
                     let interactions;
                     try{
                         interactions = await this.getMetadataContent(result);
-
                         resolve (interactions);
                     }catch(e){
                         // retry if doesn't work
@@ -232,7 +233,7 @@ export class Jetski
     public async getMetadataContent(interactions: Array<Interaction|string>): Promise<Array<Interaction>>
     {
         // Resolve all promises with metadata
-        return new Promise(async (resolve)=>{
+        return new Promise(async (resolve, reject)=>{
 
             let rmrkWithMeta: Array<Promise<Interaction>|Interaction> = [];
             let i: number = 0;
@@ -252,6 +253,7 @@ export class Jetski
                     resolve (remarks);
                 }).catch(e=>{
                     // console.error(e);
+                    reject(e);
                 })
 
         })
@@ -263,7 +265,7 @@ export class Jetski
     private async callMeta(remark: Interaction, index?: number): Promise<Interaction>
     {
 
-        let entity: Entity|null;
+        let entity: Entity|undefined;
 
         if(remark instanceof Mint){
 
@@ -278,7 +280,7 @@ export class Jetski
             }
         }
 
-        return new Promise((resolve)=>{
+        return new Promise((resolve, reject)=>{
 
             if(entity){
                 MetaData.getMetaData(entity.url, index).then(meta=>{
@@ -288,8 +290,9 @@ export class Jetski
                     // console.error(e);
                     resolve(remark);
                 })
+            }else{
+                reject(Entity.undefinedEntity);
             }
-
 
         })
 

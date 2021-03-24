@@ -7,6 +7,8 @@ const slugify = require('slugify');
 export abstract class Entity extends Remark
 {
 
+    public static undefinedEntity: string = "undefined entity";
+
     public metaData: MetaData | undefined;
     public url: string;
 

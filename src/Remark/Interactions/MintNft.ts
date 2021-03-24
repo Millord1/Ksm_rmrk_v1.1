@@ -35,8 +35,9 @@ export class MintNft extends Interaction
 
         try{
             nftData = JSON.parse(rmrkData[rmrkData.length-1]);
+
         }catch(e){
-            console.log(e);
+            console.error(e);
             return undefined
         }
 

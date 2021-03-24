@@ -21,7 +21,7 @@ export class VersionChecker
 
     public checkAssetVersion(data: NftInterface): boolean
     {
-        if(this.version == "1.0.0"){
+        if(this.version === "1.0.0"){
             return this.assetVOne(data);
         }else{
             return false;
@@ -31,7 +31,7 @@ export class VersionChecker
 
     public checkCollectionVersion(data: CollectionInterface): boolean
     {
-        if(this.version == "1.0.0"){
+        if(this.version === "1.0.0"){
             return this.collectionVOne(data);
         }else{
             return false;
@@ -47,6 +47,11 @@ export class VersionChecker
 
     private assetVOne(data: NftInterface): boolean
     {
+
+        if(data.instance.includes('-')){
+            return false;
+        }
+
         const computed = data.contractId.split('-');
 
         if(computed.length != 4){
@@ -57,15 +62,8 @@ export class VersionChecker
             }
         }
 
-        if(data.instance.includes('-')){
-            return false;
-        }
-
         return !Number.isNaN(data.sn);
     }
-
-
-
 
 
 

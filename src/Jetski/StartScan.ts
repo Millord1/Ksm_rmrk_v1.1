@@ -14,8 +14,8 @@ import {Asset} from "../Remark/Entities/Asset";
 import {WestEnd} from "../Blockchains/WestEnd";
 
 
-// Verify : 6420884
-// 6288186
+// Verify : 6312038
+// 6438942
 
 
 function getBlockchain(chainName: string)
@@ -23,10 +23,10 @@ function getBlockchain(chainName: string)
 
     switch(chainName.toLowerCase()){
 
-        case 'westend':
+        case "westend":
             return new WestEnd();
 
-        case"kusama":
+        case "kusama":
         default:
             return new Kusama();
 
@@ -40,7 +40,7 @@ export const startScanner = async (opts: Option)=>{
     // Launch jetski from yarn
 
     // @ts-ignore
-    let chain : Blockchain = getBlockchain(opts.chain);
+    let chain: Blockchain = getBlockchain(opts.chain);
 
     // @ts-ignore
     let blockNumber = opts.block;
@@ -51,11 +51,6 @@ export const startScanner = async (opts: Option)=>{
     let currentBlock: number = 0;
 
     startJetskiLoop(jetski, api, currentBlock, blockNumber);
-    // if(withMeta){
-    //     startJetskiLoop(jetski, api, currentBlock, blockNumber);
-    // }else{
-    //     scanWithoutMeta(jetski, api, currentBlock, blockNumber);
-    // }
 
 }
 
@@ -167,12 +162,19 @@ function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, 
                         }
                         blockNumber ++;
                     }).catch(e=>{
-                        // If block doesn't exists, wait and try again
-                        console.error(e);
-                        console.log('Waiting for block ...');
-                        setTimeout(()=>{
-                            currentBlock --;
-                        }, 5000);
+                        if(e == Jetski.noBlock){
+                            // If block doesn't exists, wait and try again
+                            console.error(e);
+                            console.log('Waiting for block ...');
+                            setTimeout(()=>{
+                                currentBlock --;
+                            }, 5000);
+
+                        }else if(e == Entity.undefinedEntity){
+                            // If Entity doesn't exists in Interaction
+                            // Probably because of standards version
+                            blockNumber++;
+                        }
                     });
             }
         }
@@ -197,7 +199,7 @@ export const scan = async (opts: Option)=>{
     jetski.getBlockContent(blockN, api).then(async result=>{
 
         const rmrks = await metaDataVerifier(result);
-
+        console.log(rmrks);
         for(const rmrk of rmrks){
             console.log(rmrk);
             // const gossip = new GossiperFactory(rmrk);
