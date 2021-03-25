@@ -43,9 +43,9 @@ export abstract class Interaction extends Remark
 
 
 
-    public addComputedId(nftData: NftInterface): NftInterface
+    public addComputedForMintNft(nftData: NftInterface): NftInterface
     {
-        // nftData.contractId = this.transaction.blockId + '-' + nftData.collection + '-' + nftData.instance + '-' + nftData.name;
+        // For MintNft only (without sn)
         nftData.contractId = this.transaction.blockId + '-' + nftData.collection + '-' + nftData.instance;
         return nftData;
     }
@@ -84,7 +84,8 @@ export abstract class Interaction extends Remark
 
     protected assetFromComputedId(rmrkArray: Array<string>): NftInterface|undefined
     {
-        // Return NftInterface from computedId, depending version of remmark
+        // Return NftInterface from computedId, depending version of remark
+        // For interactions except MintNft
 
         const version: string = rmrkArray[2];
 

@@ -6,7 +6,7 @@ export abstract class Remark
     public static actualVersion: string = '1.0.0';
     protected version: string;
     protected rmrk: string;
-    protected chain: Blockchain;
+    public chain: Blockchain;
 
     protected constructor(rmrk: string, chain: Blockchain, version?: string)
     {

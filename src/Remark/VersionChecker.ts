@@ -6,11 +6,11 @@ export class VersionChecker
    private readonly version: string;
 
    constructor(version: string) {
-        this.version = this.findVersion(version);
+        this.version = VersionChecker.findVersion(version);
    }
 
 
-   private findVersion(version: string): string
+   private static findVersion(version: string): string
    {
        if(version.includes("1.0.0")){
            return "1.0.0";
@@ -22,7 +22,7 @@ export class VersionChecker
     public checkAssetVersion(data: NftInterface): boolean
     {
         if(this.version === "1.0.0"){
-            return this.assetVOne(data);
+            return VersionChecker.assetVOne(data);
         }else{
             return false;
         }
@@ -32,21 +32,22 @@ export class VersionChecker
     public checkCollectionVersion(data: CollectionInterface): boolean
     {
         if(this.version === "1.0.0"){
-            return this.collectionVOne(data);
+            return VersionChecker.collectionVOne(data);
         }else{
             return false;
         }
     }
 
 
-    private collectionVOne(data: CollectionInterface): boolean
+    private static collectionVOne(data: CollectionInterface): boolean
     {
         return !Number.isNaN(data.max);
     }
 
 
-    private assetVOne(data: NftInterface): boolean
+    private static assetVOne(data: NftInterface): boolean
     {
+        // Remark 1.0.0
 
         if(data.instance.includes('-')){
             return false;

@@ -7,8 +7,8 @@ import {Transaction} from "../Transaction";
 export class List extends Interaction
 {
 
-    private asset?: Asset;
-    private value?: string;
+    public asset?: Asset;
+    public value?: string;
 
     constructor(rmrk: string, chain: Blockchain, transaction: Transaction) {
         super(rmrk, chain, transaction);

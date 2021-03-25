@@ -41,7 +41,7 @@ export class MintNft extends Interaction
             return undefined
         }
 
-        nftData = this.addComputedId(nftData);
+        nftData = this.addComputedForMintNft(nftData);
         nftData = this.slugifyNftObj(nftData);
 
         const versionChecker = new VersionChecker(this.version);
