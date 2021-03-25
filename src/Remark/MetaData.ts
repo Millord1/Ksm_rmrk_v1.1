@@ -1,6 +1,5 @@
 import {Entity} from "./Entities/Entity";
 
-
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 
@@ -28,6 +27,7 @@ export class MetaData
     public background_color: string = "";
 
     private static ipfsUrl: string = "https://ipfs.io/ipfs/";
+    private static cloudFlareUrl: string = "https://cloudflare-ipfs.com/ipfs/";
     private static delayForCalls: number = 1000;
 
     constructor(url: string, data: MetadataInputs) {
@@ -37,11 +37,16 @@ export class MetaData
         this.name = data.name != undefined ? Entity.slugification(data.name) : data.name;
         this.background_color = data.background_color;
         this.attributes = data.attributes;
-        this.image = data.image != "" ? data.image : data.animation_url;
+        
+        if(!data.image || data.image == ""){
+            this.image = data.animation_url;
+        }else{
+            this.image = data.image;
+        }
     }
 
 
-    private static getCorrectUrl(url: string): string
+    private static getCorrectUrl(url: string, index?: number): string
     {
         // Modify the url for ipfs calls
 
@@ -49,7 +54,12 @@ export class MetaData
         const shortUrl = urls.pop();
 
         if(urls.includes('ipfs')){
-            return this.ipfsUrl + shortUrl;
+            if(index){
+                // Hack for avoid server saturation
+                return index % 2 === 0 ? this.ipfsUrl + shortUrl : this.cloudFlareUrl + shortUrl;
+            }else{
+                return this.ipfsUrl + shortUrl
+            }
         }else{
             return url;
         }
@@ -64,7 +74,7 @@ export class MetaData
         const shortUrl = urls.pop();
 
         if(urls.includes('ipfs')){
-            return "https://cloudflare-ipfs.com/ipfs/" + shortUrl;
+            return MetaData.cloudFlareUrl + shortUrl;
         }else{
             return url;
         }
@@ -80,8 +90,8 @@ export class MetaData
             timeToWait = batchIndex * this.delayForCalls;
         }
 
-        url = this.getCorrectUrl(url);
-        console.log(url);
+        url = this.getCorrectUrl(url, batchIndex);
+
         return new Promise((resolve, reject)=>{
 
             const request = new XMLHttpRequest();
