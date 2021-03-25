@@ -21,4 +21,5 @@ export class Asset extends Entity
 
         this.token = new Token(nftData.sn, nftData.collection, nftData.transferable);
     }
+
 }

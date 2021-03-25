@@ -15,7 +15,7 @@ import {WestEnd} from "../Blockchains/WestEnd";
 
 
 // Verify : 6312038
-// 6460469
+// 6334378
 
 
 function getBlockchain(chainName: string)
@@ -115,6 +115,7 @@ function startJetskiLoop(jetski: Jetski, api: ApiPromise, currentBlock: number, 
 
 
 export const scan = async (opts: Option)=>{
+
     // scan only one block
 
     // @ts-ignore
@@ -131,9 +132,9 @@ export const scan = async (opts: Option)=>{
         const rmrks = await metaDataVerifier(result);
         for(const rmrk of rmrks){
             console.log(rmrk);
-            // const gossip = new GossiperFactory(rmrk);
-            // const gossiper = await gossip.getGossiper();
-            // gossiper?.gossip();
+            const gossip = new GossiperFactory(rmrk);
+            const gossiper = await gossip.getGossiper();
+            gossiper?.gossip();
         }
     });
 }

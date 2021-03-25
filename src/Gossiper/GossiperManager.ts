@@ -5,6 +5,7 @@ import {WestEnd} from "../Blockchains/WestEnd";
 import {WestendBlockchain} from "canonizer/src/canonizer/Substrate/Westend/WestendBlockchain";
 import {Kusama} from "../Blockchains/Kusama";
 import {KusamaBlockchain} from "canonizer/src/canonizer/Kusama/KusamaBlockchain";
+import {Polkadot} from "../Blockchains/Polkadot";
 
 export abstract class GossiperManager
 {
@@ -25,10 +26,10 @@ export abstract class GossiperManager
 
         switch(chainName.toLowerCase()){
 
-            case WestEnd.constructor.name.toLowerCase():
+            case WestEnd.name.toLowerCase():
                 return new WestendBlockchain(sandra);
 
-            case Kusama.constructor.name.toLowerCase():
+            case Kusama.name.toLowerCase():
             default:
                 return new KusamaBlockchain(sandra);
 

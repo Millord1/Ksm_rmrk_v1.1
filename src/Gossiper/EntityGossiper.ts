@@ -59,7 +59,7 @@ export class EntityGossiper extends GossiperManager
 
         switch(this.entityName.toLowerCase()){
 
-            case Asset.constructor.name.toLowerCase():
+            case Asset.name.toLowerCase():
 
                 let assetId: string = "";
                 if(this.assetId){
@@ -91,7 +91,7 @@ export class EntityGossiper extends GossiperManager
                 break;
 
 
-            case Collection.constructor.name.toLowerCase():
+            case Collection.name.toLowerCase():
 
                 let collection: string = "";
                 if(this.collection){
