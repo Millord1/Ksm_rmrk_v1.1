@@ -1,15 +1,13 @@
 import {Send} from "../Remark/Interactions/Send";
 import {MintNft} from "../Remark/Interactions/MintNft";
-import {Buy} from "../Remark/Interactions/Buy";
-import {Jetski} from "../Jetski/Jetski";
 import {CSCanonizeManager} from "canonizer/src/canonizer/CSCanonizeManager";
-import {KusamaBlockchain} from "canonizer/src/canonizer/Kusama/KusamaBlockchain";
 import {BlockchainAddress} from "canonizer/src/canonizer/BlockchainAddress";
 import {BlockchainContract} from "canonizer/src/canonizer/BlockchainContract";
 import {RmrkContractStandard} from "canonizer/src/canonizer/Interfaces/RmrkContractStandard";
 import {BlockchainEvent} from "canonizer/src/canonizer/BlockchainEvent";
+import {GossiperManager} from "./GossiperManager";
 
-export class EventGossiper
+export class EventGossiper extends GossiperManager
 {
 
     private readonly contractId: string;
@@ -21,7 +19,10 @@ export class EventGossiper
     private readonly txId: string;
 
 
-    constructor(remark: Send|MintNft|Buy) {
+    constructor(remark: Send|MintNft, csCanonizeManager: CSCanonizeManager, chain: string) {
+
+        super(chain, csCanonizeManager);
+
         this.contractId = remark.asset ? remark.asset.contractId : "";
         this.sn = remark.asset ? remark.asset.token.sn : "";
         this.signer = remark.transaction.source;
@@ -37,20 +38,17 @@ export class EventGossiper
             return undefined;
         }
 
-        const jwt = Jetski.getJwt();
+        const canonizeManager = this.canonizeManager;
+        const sandra = canonizeManager.getSandra();
 
-        const canonizeManager = new CSCanonizeManager({connector:{gossipUrl:'http://arkam.everdreamsoft.com/alex/gossip',jwt:jwt}});
-        const sandra =  canonizeManager.getSandra();
-        const blockchain = new KusamaBlockchain(sandra);
+        const receiver = new BlockchainAddress(this.chain.addressFactory, this.receiver, sandra);
+        const address = new BlockchainAddress(this.chain.addressFactory, this.signer, sandra);
 
-        const receiver = new BlockchainAddress(blockchain.addressFactory, this.receiver, sandra);
-        const address = new BlockchainAddress(blockchain.addressFactory, this.signer, sandra);
-
-        const contract = new BlockchainContract(blockchain.contractFactory, this.contractId, sandra,new RmrkContractStandard(canonizeManager));
+        const contract = new BlockchainContract(this.chain.contractFactory, this.contractId, sandra,new RmrkContractStandard(canonizeManager));
         const contractStandard = new RmrkContractStandard(canonizeManager, this.sn);
 
-        let event = new BlockchainEvent(blockchain.eventFactory, address, receiver, contract, this.txId, this.timestamp, '1', blockchain, this.blockId, contractStandard, sandra);
-        canonizeManager.gossipBlockchainEvents(blockchain).then(()=>{console.log("event gossiped " + this.blockId)});
+        let event = new BlockchainEvent(this.chain.eventFactory, address, receiver, contract, this.txId, this.timestamp, '1', this.chain, this.blockId, contractStandard, sandra);
+        canonizeManager.gossipBlockchainEvents(this.chain).then(()=>{console.log("event gossiped " + this.blockId)});
     }
 
 }
