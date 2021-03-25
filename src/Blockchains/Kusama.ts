@@ -4,7 +4,8 @@ export class Kusama extends Blockchain
 {
 
     public constructor() {
-        super('Kusama', "KSM", "", true, "wss://kusama-rpc.polkadot.io/");
+        super("KSM", "", true, "wss://kusama-rpc.polkadot.io/", 12);
     }
+
 
 }
