@@ -8,9 +8,6 @@ import {MetaData} from "../Remark/MetaData";
 import {Mint} from "../Remark/Interactions/Mint";
 import {Entity} from "../Remark/Entities/Entity";
 import {MintNft} from "../Remark/Interactions/MintNft";
-import {load} from "ts-dotenv";
-import {strict as assert} from "assert";
-import {domainToASCII} from "url";
 
 
 interface Transfer
@@ -44,22 +41,7 @@ export class Jetski
 
 
 
-    public static getJwt()
-    {
-        const env = load({
-            JWT: String
-        })
-
-        assert.ok(env.JWT != "jwt_code");
-        assert.ok(env.JWT != "");
-        assert.ok(env.JWT != null);
-        assert.ok(env.JWT != undefined);
-
-        return env.JWT;
-    }
-
-
-    public async getBlockContent(blockNumber: number, api: ApiPromise, withMetaData: boolean = true): Promise<Array<Interaction>>
+    public async getBlockContent(blockNumber: number, api: ApiPromise): Promise<Array<Interaction>>
     {
 
         return new Promise(async (resolve, reject)=>{
@@ -178,21 +160,6 @@ export class Jetski
 
     }
 
-
-
-
-    private deleteStrings(array: Array<string|Interaction>): Array<Interaction>
-    {
-        let arrayWithoutStrings: Array<Interaction> = [];
-
-        array.forEach((item)=>{
-            if(item instanceof Interaction){
-                arrayWithoutStrings.push(item);
-            }
-        })
-
-        return arrayWithoutStrings;
-    }
 
 
 
